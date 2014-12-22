@@ -1,0 +1,2 @@
+--compilers coffee:coffee-script/register 
+--require test/spec_helper

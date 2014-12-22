@@ -1,0 +1,41 @@
+{
+  "name": "hapiger",
+  "version": "0.0.1",
+  "description": "Hapi.js HTTP wrapper for Good Enough Recommendation engine (GER)",
+  "url": "https://github.com/grahamjenson/hapiger",
+  "main": "index.coffee",
+  "keywords": [
+    "hapiger",
+    "recommendations"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grahamjenson/hapiger"
+  },
+  "author": {
+    "name": "Graham Jenson",
+    "email": "grahamjenson@maori.geek.nz",
+    "url": "http://www.maori.geek.nz/"
+  },
+  "license": "MIT",
+  "dependencies"  : {
+    "hapi": "8.0.0",
+    "joi": "5.0.2",
+    "boom": "2.6.1",
+    "good": "5.1.0 ",
+    "good-console": "3.1.2",
+    "ger": "0.0.61",
+    "bluebird": "2.4.2"
+  },
+  "devDependencies": {
+    "mocha": "1.18.2",
+    "chai": "1.9.1",
+    "coffee-script": "1.7.1",
+    "ger-client": "0.0.5",
+    "sinon": "1.12.2"
+  },
+  "scripts": {
+    "build": "./node_modules/.bin/coffee -c lib/*.coffee hapi_ger.coffee",
+    "test": "mocha"
+  }
+}
