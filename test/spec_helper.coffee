@@ -12,7 +12,7 @@ global.GERClient = require 'ger-client'
 fs = require('fs');
 path = require 'path'
 
-HapiGER = require('../index.coffee')
+HapiGER = require('../lib/hapi_server.coffee')
 
 global.bootstrap_stream = ->
   fs.createReadStream(path.resolve('./test/test_events.csv'))
@@ -24,12 +24,12 @@ global.start_server = server.initialize()
 .then( -> server)
 
 global.start_server_w_client = () ->
-  namespace = "tenant_#{Math.floor((1 + Math.random()) * 0x10000000)}"
   start_server.then( (server) ->
-    server.create_namespace(namespace)
+    server.destroy_namespace('default_ns')
+    .then( -> server.create_namespace('default_ns'))
   )
   .then( -> 
-    new GERClient("#{server.info.uri}/#{namespace}")
+    new GERClient("#{server.info.uri}/default_ns")
   )
 
 global.requests = {}

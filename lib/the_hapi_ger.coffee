@@ -137,6 +137,7 @@ GERAPI =
           ger.get_action(action)
         )
         .then( (act) ->
+          console.log act
           throw Boom.notFound('action not found') if not act
           reply(act)
         )
@@ -149,6 +150,12 @@ GERAPI =
     plugin.route(
       method: 'GET',
       path: '/{namespace}/recommendations',
+      config:
+        validate:
+          query:
+            person: Joi.any().required()
+            action: Joi.any().required()
+
       handler: (request, reply) =>
         #TODO change type of recommendation based on parameters, e.g. for person action if they are included
         
@@ -158,9 +165,9 @@ GERAPI =
 
         get_namespace_ger(request.params.namespace)
         .then( (ger) ->
-          ger.recommendations_for_person(person, action, {explain: explain})
+          ger.recommendations_for_person(person, action)
         )
-        .spread( (recommendations) ->
+        .then( (recommendations) ->
           reply(recommendations)
         )
         .catch((err) -> Utils.handle_error(request, err, reply))
