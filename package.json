@@ -17,6 +17,9 @@
     "email": "grahamjenson@maori.geek.nz",
     "url": "http://www.maori.geek.nz/"
   },
+  "bin": {
+    "hapiger": "./bin/hapiger"
+  },
   "license": "MIT",
   "dependencies"  : {
     "hapi": "8.0.0",
@@ -25,12 +28,15 @@
     "good": "5.1.0 ",
     "good-console": "3.1.2",
     "ger": "0.0.61",
-    "bluebird": "2.4.2"
+    "bluebird": "2.4.2",
+    "coffee-script": "1.7.1",
+    "chalk": "0.5.1",
+    "underscore": "1.7.0",
+    "commander": "2.6.0"
   },
   "devDependencies": {
     "mocha": "1.18.2",
     "chai": "1.9.1",
-    "coffee-script": "1.7.1",
     "ger-client": "0.0.5",
     "sinon": "1.12.2"
   },

@@ -18,6 +18,8 @@ PsqlESM = g.PsqlESM
 MemESM = g.MemESM
 RethinkDBESM = g.RethinkDBESM
 
+_ = require "underscore"
+
 Utils = {}
 
 Utils.handle_error = (logger, err, reply) ->
@@ -32,7 +34,20 @@ Utils.handle_error = (logger, err, reply) ->
 
 class HapiGER
 
-  initialize: () ->
+  initialize: (options = {}) ->
+    @options = _.defaults(options, {
+      esm: 'memory' 
+      port: 3456
+    })
+
+    switch @options.esm
+      when 'memory'
+        @_esm = MemESM
+      when 'pg'
+        @_esm = PsqlESM
+      when 'rethinkdb'
+        @_esm = RethinkDBESM
+
     bb.try( => @init_server())
     .then( => @setup_server())
     .then( => @add_server_methods())
@@ -41,8 +56,7 @@ class HapiGER
   init_server: (esm = 'mem') ->
     #SETUP SERVER
     @_server = new Hapi.Server()
-    @_server.connection({ port: process.env.PORT });
-    @_esm = MemESM
+    @_server.connection({ port: @options.port });
     @info = @_server.info
     (new @_esm('default')).initialize() #add the default namespace
   
@@ -78,8 +92,6 @@ class HapiGER
   stop: ->
     @stop_server()
 
-    
-
   load_server_plugin: (plugin, options = {}) ->
     d = bb.defer()
     @_server.register({register: require(plugin), options: options}, (err) ->
@@ -105,8 +117,5 @@ class HapiGER
     d.promise
 
 
-#AMD
-if (typeof define != 'undefined' && define.amd)
-  define([], -> return HapiGER)
-else if (typeof module != 'undefined' && module.exports)
-  module.exports = HapiGER;
+
+module.exports = HapiGER

@@ -30,7 +30,7 @@ hapiger
 To create an event:
 
 ```
-curl -X POST 'http://localhost:7890/default/event' -d '{person: "p1", action: "likes", thing: "x-men"}'
+curl -X POST 'http://localhost:7890/default/event' -d '{person: "p1", action: "likes", thing: "x-men"}' -H "Content-Type: application/json"
 ```
 
 The `default` namespace is initialized on startup
@@ -61,14 +61,14 @@ curl -X POST 'http://localhost:7890/namespace/movies'
 Then you can add events
 
 ```
-curl -X POST 'http://localhost:7890/movies/event' -d '{person: "p1", action: "likes", thing: "x-men"}'
+curl -X POST 'http://localhost:7890/movies/event' -d '{person: "p1", action: "likes", thing: "x-men"}' -H "Content-Type: application/json"
 ```
 
 
 A namespace also has an individual GER configuration which can be set by passing a payload, e.g.
 
 ```
-curl -X POST 'http://localhost:7890/namespace' -d '{name: "movies", options: {crowd_weight: 1}}'
+curl -X POST 'http://localhost:7890/namespace' -d '{name: "movies", options: {crowd_weight: 1}}' -H "Content-Type: application/json"
 ```
 
 Delete a namespace (and all its events) with 
