@@ -219,14 +219,14 @@ describe 'POST Event', ->
 
 
 describe 'GET event', ->
-  it 'should 400 if no person is passed', ->
+  it 'should 404 if no events for action thing are found', ->
     client = null
     start_server_w_client().then( (cli) -> client = cli)
     .then( ->
       client.get_event(undefined, 'action', 'thing')
     )
     .spread( (json, status) ->
-      status.should.equal 400
+      status.should.equal 404
     )
 
   it 'should return 404 if the event does not exist', ->

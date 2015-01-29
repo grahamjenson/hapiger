@@ -18,9 +18,11 @@ GERAPI =
     ESM_OPTIONS = options.ESM_OPTIONS
 
     get_namespace_ger = (name) ->
-      NS.find(name)
+      esm = new ESM(name, ESM_OPTIONS)
+      NS.find(esm, name)
       .then( (ns) ->
-        ger = new GER(new ESM(name, ESM_OPTIONS), ns.options)
+        throw Boom.notFound('namespace not found') if not ns
+        ger = new GER(esm, ns.options)
         ger
       )
 
@@ -30,6 +32,9 @@ GERAPI =
       method: 'POST',
       path: '/{namespace}/events',
       config:
+        payload:
+          parse: true
+          override: 'application/json'
         validate:
           payload: Joi.object().keys(
               person: Joi.any().required()
@@ -55,17 +60,17 @@ GERAPI =
       config:
         validate:
           query:
-            person: Joi.any().required()
-            action: Joi.any().required()
-            thing: Joi.any().required()
+            person: Joi.any()
+            action: Joi.any()
+            thing: Joi.any()
       handler: (request, reply) =>
         get_namespace_ger(request.params.namespace)
         .then( (ger) ->
-          ger.find_event(request.query.person, request.query.action, request.query.thing)
+          ger.find_events(request.query.person, request.query.action, request.query.thing)
         )
-        .then( (event) ->
-          throw Boom.notFound('event not found') if not event
-          reply(event) 
+        .then( (events) ->
+          throw Boom.notFound('event not found') if events.length == 0
+          reply({"_data": events})
         )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )

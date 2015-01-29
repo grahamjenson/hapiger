@@ -33,8 +33,8 @@ Utils.handle_error = (logger, err, reply) ->
 
 
 class HapiGER
-
-  initialize: (options = {}) ->
+  constructor: (options = {}) ->
+    console.log options
     @options = _.defaults(options, {
       esm: 'memory' 
       port: 3456
@@ -48,6 +48,7 @@ class HapiGER
       when 'rethinkdb'
         @_esm = RethinkDBESM
 
+  initialize: () ->
     bb.try( => @init_server())
     .then( => @setup_server())
     .then( => @add_server_methods())
@@ -87,6 +88,7 @@ class HapiGER
 
 
   start: ->
+    console.log "Starting Server on #{@options.port}"
     @start_server()
 
   stop: ->

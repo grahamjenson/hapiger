@@ -3,10 +3,14 @@ bb = require 'bluebird'
 class NS
   constructor: (@name, @options = {}) ->
 
-NS.find = (name) ->
+NS.find = (esm, name) ->
   #returns the object with GER options
   options = {}
-  bb.try( => new NS(name, options))
+  esm.exists(name)
+  .then( (exists) ->
+    return false if !exists
+    return new NS(name, options)
+  )
 
 #AMD
 if (typeof define != 'undefined' && define.amd)
