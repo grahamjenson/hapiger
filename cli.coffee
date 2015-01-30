@@ -18,7 +18,8 @@ cli = ->
 
   verbose = program.verbose
   
-
+  bb.Promise.longStackTraces() if verbose
+  
   hapiger = new HapiGER({
     esm: program.esm
     esmurl: program.esmurl

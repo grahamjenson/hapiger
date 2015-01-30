@@ -10,19 +10,16 @@ GER = g.GER
 
 Utils = require './utils'
 
-NS = require './namespace'
-
 GERAPI =
   register: (plugin, options, next) ->
-    ESM = options.ESM
-    ESM_OPTIONS = options.ESM_OPTIONS
-
+    ger = options.ger
+    console.log options
     get_namespace_ger = (name) ->
-      esm = new ESM(name, ESM_OPTIONS)
-      NS.find(esm, name)
-      .then( (ns) ->
-        throw Boom.notFound('namespace not found') if not ns
-        ger = new GER(esm, ns.options)
+      ger.set_namespace(name)
+      ger.namespace_exists()
+      .then( (exists) ->
+        throw Boom.notFound('namespace not found') if not exists
+        #TODO it might be possible for namespace specific options here with set_options
         ger
       )
 

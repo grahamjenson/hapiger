@@ -3,6 +3,7 @@ environment = require '../config/environment'
 
 #PROMISES LIBRARY
 bb = require 'bluebird'
+#bb.Promise.longStackTraces();
 
 # HAPI STACK
 Hapi = require 'hapi'
@@ -12,6 +13,8 @@ Joi = require 'joi'
 g = require 'ger'
 knex = g.knex # postgres client
 r = g.r #rethink client
+
+GER = g.GER
 
 #ESMs
 PsqlESM = g.PsqlESM
@@ -36,17 +39,25 @@ class HapiGER
   constructor: (options = {}) ->
     console.log options
     @options = _.defaults(options, {
-      esm: 'memory' 
+      esm: 'memory'
+      esmurl: null
       port: 3456
     })
 
     switch @options.esm
       when 'memory'
-        @_esm = MemESM
+        @_esm = new MemESM('default', {})
+        @_ger = new GER(@_esm, @options)
       when 'pg'
-        @_esm = PsqlESM
+        throw new Error('No esm_url') if !options.esmurl
+        knex = new knex(client: 'pg', connection: options.esmurl)
+        @_esm = new PsqlESM('default', {knex: knex})
+        @_ger = new GER(@_esm, @options)
       when 'rethinkdb'
         @_esm = RethinkDBESM
+        @_esm_options = {}
+      else
+        throw new Error("no such esm")
 
   initialize: () ->
     bb.try( => @init_server())
@@ -59,22 +70,23 @@ class HapiGER
     @_server = new Hapi.Server()
     @_server.connection({ port: @options.port });
     @info = @_server.info
-    (new @_esm('default')).initialize() #add the default namespace
-  
-  create_namespace: (namespace) ->
-    (new @_esm(namespace)).initialize()
-
-  destroy_namespace: (namespace) ->
-    (new @_esm(namespace)).destroy()
+    @_ger.initialize_namespace() #add the default namespace
 
   setup_server: ->
     @load_server_plugin('good', environment.logging_options)
 
   add_server_routes: ->
-    @load_server_plugin('./the_hapi_ger', {ESM : @_esm, ESM_OPTIONS : {}})
+    @load_server_plugin('./the_hapi_ger', {ger : @_ger})
     
   add_server_methods: ->
 
+  create_namespace: (namespace) ->
+    @_ger.set_namespace(namespace)
+    @_ger.initialize_namespace()
+
+  destroy_namespace: (namespace) ->
+    @_ger.set_namespace(namespace)
+    @_ger.destroy_namespace()
 
   server_method: (method, args = []) ->
     d = bb.defer()

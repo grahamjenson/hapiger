@@ -6,6 +6,7 @@ should = chai.should()
 
 global.sinon = require 'sinon'
 global.bb = require 'bluebird'
+bb.Promise.longStackTraces();
 
 global.GERClient = require 'ger-client'
 
