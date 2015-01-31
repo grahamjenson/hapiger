@@ -23,6 +23,51 @@ GERAPI =
         ger
       )
 
+    ########### NAMESPACE RESOURCE ################
+    plugin.route(
+      method: 'GET',
+      path: '/namespace/{namespace}',
+      handler: (request, reply) =>
+        namespace = request.params.namespace
+        get_namespace_ger(namespace)
+        .then( ->
+          reply({namespace: namespace})
+        )
+        .catch((err) -> Utils.handle_error(request, err, reply) )
+    )
+
+    plugin.route(
+      method: 'DELETE',
+      path: '/namespace/{namespace}',
+      handler: (request, reply) =>
+        namespace = request.params.namespace
+        ger.set_namespace(namespace)
+        ger.destroy_namespace()
+        .then( ->
+          reply({namespace: namespace}) 
+        )
+        .catch((err) -> Utils.handle_error(request, err, reply) )
+    )
+
+    plugin.route(
+      method: 'POST',
+      path: '/namespace',
+      config:
+        validate:
+          payload: Joi.object().keys(
+              namespace: Joi.any().required()
+          )
+
+      handler: (request, reply) =>
+        namespace = request.payload.namespace
+        ger.set_namespace(namespace)
+        ger.initialize_namespace()
+        .then( ->
+          reply({namespace: namespace}) 
+        )
+        .catch((err) -> Utils.handle_error(request, err, reply) )
+    )
+
     ########### EVENTS RESOURCE ################
     #POST create event
     plugin.route(
@@ -139,7 +184,6 @@ GERAPI =
           ger.get_action(action)
         )
         .then( (act) ->
-          console.log act
           throw Boom.notFound('action not found') if not act
           reply(act)
         )
