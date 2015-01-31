@@ -42,16 +42,17 @@ class HapiGER
       esm: 'memory'
       esmurl: null
       port: 3456
+      namespace: 'default'
     })
 
     switch @options.esm
       when 'memory'
-        @_esm = new MemESM('default', {})
+        @_esm = new MemESM(@options.namespace, {})
         @_ger = new GER(@_esm, @options)
       when 'pg'
         throw new Error('No esm_url') if !options.esmurl
         knex = new knex(client: 'pg', connection: options.esmurl)
-        @_esm = new PsqlESM('default', {knex: knex})
+        @_esm = new PsqlESM(@options.namespace, {knex: knex})
         @_ger = new GER(@_esm, @options)
       when 'rethinkdb'
         @_esm = RethinkDBESM

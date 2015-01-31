@@ -13,7 +13,7 @@ Utils = require './utils'
 GERAPI =
   register: (plugin, options, next) ->
     ger = options.ger
-    console.log options
+
     get_namespace_ger = (name) ->
       ger.set_namespace(name)
       ger.namespace_exists()
