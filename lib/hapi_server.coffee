@@ -43,6 +43,16 @@ class HapiGER
       esmurl: null
       port: 3456
       namespace: 'default'
+      minimum_history_limit: 1,
+      similar_people_limit: 25,
+      related_things_limit: 10
+      recommendations_limit: 20,
+      recent_event_days: 14,
+      previous_actions_filter: []
+      compact_database_person_action_limit: 1500
+      compact_database_thing_action_limit: 1500
+      person_history_limit: 500
+      crowd_weight: 0
     })
 
     switch @options.esm
