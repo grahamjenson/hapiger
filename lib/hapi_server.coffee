@@ -40,7 +40,7 @@ class HapiGER
     console.log options
     @options = _.defaults(options, {
       esm: 'memory'
-      esmurl: null
+      esmoptions: {}
       port: 3456
       namespace: 'default'
       minimum_history_limit: 1,
@@ -60,13 +60,14 @@ class HapiGER
         @_esm = new MemESM(@options.namespace, {})
         @_ger = new GER(@_esm, @options)
       when 'pg'
-        throw new Error('No esm_url') if !options.esmurl
-        knex = new knex(client: 'pg', connection: options.esmurl)
+        throw new Error('No esm_url') if !@options.esmoptions.url
+        knex = new knex(client: 'pg', connection: @options.esmoptions.url)
         @_esm = new PsqlESM(@options.namespace, {knex: knex})
         @_ger = new GER(@_esm, @options)
       when 'rethinkdb'
-        @_esm = RethinkDBESM
-        @_esm_options = {}
+        rethinkcon = new r(@options.esmoptions)
+        @_esm = new RethinkDBESM(@options.namespace, {r: rethinkcon})
+        @_ger = new GER(@_esm, @options)
       else
         throw new Error("no such esm")
 
