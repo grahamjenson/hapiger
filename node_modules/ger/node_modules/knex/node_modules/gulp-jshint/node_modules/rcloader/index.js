@@ -62,7 +62,7 @@ function RcLoader(name, userConfig, finderConfig) {
           respond(err, configFile);
         });
       }
-      configFile = _.assign(configFile || {}, config);
+      configFile = _.merge(config, configFile || {});
 
       if (sync) return configFile;
       cb(void 0, configFile);

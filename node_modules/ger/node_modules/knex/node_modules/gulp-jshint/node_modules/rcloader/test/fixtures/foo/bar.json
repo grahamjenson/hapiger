@@ -1,3 +1,4 @@
 {
-  "baz":"bog"
+  "baz":"bog",
+  "strict": true
 }
