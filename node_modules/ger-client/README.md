@@ -1,1 +1,1 @@
-Client to the Heroku Add-on Ger (currently in Alpha)
+HTTP client for [HapiGER](https://github.com/grahamjenson/hapiger)

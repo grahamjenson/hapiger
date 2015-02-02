@@ -13,7 +13,35 @@ parse_response_into_json_status = (response) ->
   )
 
 class GERClient
-  constructor : (@ger_uri) ->
+  constructor : (@server_uri, @namespace) ->
+    @root_namespace_uri = "#{@server_uri}/namespace"
+    @namespace_uri = "#{@root_namespace_uri}/#{@namespace}"
+    @ger_uri = "#{@server_uri}/#{@namespace}"
+
+  destroy_namespace: ->
+    req = { 
+      method: "DELETE", 
+      url: "#{@namespace_uri}"
+    }
+    qhttp.request(req)
+    .then(parse_response_into_json_status)
+
+  show_namespace: ->
+    req = { 
+      method: "GET", 
+      url: "#{@namespace_uri}"
+    }
+    qhttp.request(req)
+    .then(parse_response_into_json_status)
+
+  create_namespace: ->
+    req = { 
+      method: "POST", 
+      body: [JSON.stringify({namespace: @namespace})], 
+      url: "#{@root_namespace_uri}"
+    }
+    qhttp.request(req)
+    .then(parse_response_into_json_status)
 
   event: (person, action, thing, session) ->
     req = { 
@@ -47,6 +75,7 @@ class GERClient
 
   recommendations_for_person: (person, action) ->
     req = { method: "GET", url: "#{@ger_uri}/recommendations?person=#{person}&action=#{action}"}
+
     qhttp.request(req)
     .then(parse_response_into_json_status)
 
@@ -78,7 +107,7 @@ class GERClient
     qhttp.request(req)
     .then(parse_response_into_json_status)
 
-  compact_async_database: () ->
+  compact_database_async: () ->
     req = { method: "POST", body: [], url: "#{@ger_uri}/compact_async"}
     qhttp.request(req)
     .then(parse_response_into_json_status)
