@@ -24,13 +24,17 @@ global.start_server = server.initialize()
 .then( -> server.start())
 .then( -> server)
 
-global.start_server_w_client = () ->
+global.start_server_w_client = (namespace = 'default_ns') ->
+  client = null
   start_server.then( (server) ->
-    server.destroy_namespace('default_ns')
-    .then( -> server.create_namespace('default_ns'))
+    client = new GERClient("#{server.info.uri}", namespace)
+    client.destroy_namespace()
+  )
+  .then( ->
+    client.create_namespace()
   )
   .then( -> 
-    new GERClient("#{server.info.uri}/default_ns")
+    client
   )
 
 global.requests = {}

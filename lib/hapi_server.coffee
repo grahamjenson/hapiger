@@ -91,14 +91,6 @@ class HapiGER
     
   add_server_methods: ->
 
-  create_namespace: (namespace) ->
-    @_ger.set_namespace(namespace)
-    @_ger.initialize_namespace()
-
-  destroy_namespace: (namespace) ->
-    @_ger.set_namespace(namespace)
-    @_ger.destroy_namespace()
-
   server_method: (method, args = []) ->
     d = bb.defer()
     @_server.methods[method].apply(@, args.concat((err, result) ->

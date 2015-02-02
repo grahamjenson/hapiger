@@ -2,7 +2,7 @@ describe 'POST bootstrap', ->
    it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace")
+      client = new GERClient("#{server.info.uri}","NOTnamespace")
       client.bootstrap(bootstrap_stream())
     )
     .spread( (json, status) ->
@@ -51,7 +51,7 @@ describe 'GET recommendations', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace")
+      client = new GERClient("#{server.info.uri}","NOTnamespace")
       client.recommendations_for_person("person", "action")
     )
     .spread( (json, status) ->
@@ -94,7 +94,7 @@ describe 'GET action weight', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace")
+      client = new GERClient("#{server.info.uri}","NOTnamespace")
       client.get_action("action")
     )
     .spread( (json, status) ->
@@ -132,7 +132,7 @@ describe 'PUT set action weight', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace")
+      client = new GERClient("#{server.info.uri}","NOTnamespace")
       client.action("action", 10)
     )
     .spread( (json, status) ->
@@ -155,7 +155,7 @@ describe 'GET Event Stats', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace")
+      client = new GERClient("#{server.info.uri}","NOTnamespace")
       client.get_event_stats()
     )
     .spread( (json, status) ->
@@ -186,7 +186,7 @@ describe 'POST Event', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace") 
+      client = new GERClient("#{server.info.uri}","NOTnamespace") 
       client.event("person", "action", "thing")
     )
     .spread( (json, status) ->
@@ -260,8 +260,8 @@ describe 'POST compact_async', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace") 
-      client.compact_async_database()
+      client = new GERClient("#{server.info.uri}","NOTnamespace") 
+      client.compact_database_async()
     )
     .spread( (json, status) ->
       status.should.equal 404
@@ -281,7 +281,7 @@ describe 'POST compact_async', ->
     .spread( (json, status) ->
       status.should.equal 200
       json.added_events.should.equal 3
-      client.compact_async_database()
+      client.compact_database_async()
     )
     .spread( (json, status) ->
       status.should.equal 200
@@ -297,7 +297,7 @@ describe 'POST compact_async', ->
   it 'should 404 for no namespace' , ->
     start_server
     .then( ->
-      client = new GERClient("#{server.info.uri}/ns/NOTnamespace") 
+      client = new GERClient("#{server.info.uri}","NOTnamespace") 
       client.compact_database()
     )
     .spread( (json, status) ->
