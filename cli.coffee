@@ -11,8 +11,8 @@ cli = ->
     .usage('[options]')
     .description('start a hapiger server')
     .option('-p, --port <port>', 'the port to start the server on', 3456)
-    .option('-e, --esm <esm>', 'select Event Store Manager [memory, pg, rethinkdb]', 'memory')
-    .option('-E, --esmoptions <options>', 'JSON representation of Options for esm e.g. "{"url": "postgres://localhost/hapiger"}"
+    .option('-e, --es <esm>', 'select Event Store [memory, pg, rethinkdb]', 'memory')
+    .option('-E, --esoptions <options>', 'JSON representation of Options for Event Store e.g. "{"url": "postgres://localhost/hapiger"}"
       \n\t memory -- {} 
       \n\t pg -- {"url" : "postgres url"}
       \n\t rethinkdb -- "{"host": "rethinkdb host", "port": "rethink port", "db": "rethink database"}
@@ -36,8 +36,8 @@ cli = ->
   bb.Promise.longStackTraces() if verbose
   
   hapiger = new HapiGER({
-    esm: program.esm
-    esmoptions: program.esmoptions
+    esm: program.es
+    esmoptions: program.esoptions
     port: program.port
     minimum_history_limit: program.minimum_history_limit,
     similar_people_limit: program.similar_people_limit

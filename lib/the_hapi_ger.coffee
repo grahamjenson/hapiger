@@ -53,6 +53,9 @@ GERAPI =
       method: 'POST',
       path: '/namespace',
       config:
+        payload:
+          parse: true
+          override: 'application/json'
         validate:
           payload: Joi.object().keys(
               namespace: Joi.any().required()
@@ -159,10 +162,19 @@ GERAPI =
 
     #PUT update action
     plugin.route(
-      method: 'PUT',
-      path: '/{namespace}/actions/{action}',
+      method: 'POST',
+      path: '/{namespace}/actions',
+      config:
+        payload:
+          parse: true
+          override: 'application/json'
+        validate:
+          payload: Joi.object().keys(
+              name: Joi.any().required()
+              weight: Joi.any().optional()            
+          )
       handler: (request, reply) =>
-        action = request.params.action
+        action = request.payload.name
         get_namespace_ger(request.params.namespace)
         .then( (ger) ->
           ger.action(action, request.payload.weight)
@@ -176,9 +188,9 @@ GERAPI =
     #GET update action
     plugin.route(
       method: 'GET',
-      path: '/{namespace}/actions/{action}',
+      path: '/{namespace}/actions/{name}',
       handler: (request, reply) =>
-        action = request.params.action
+        action = request.params.name
         get_namespace_ger(request.params.namespace)
         .then( (ger) ->
           ger.get_action(action)

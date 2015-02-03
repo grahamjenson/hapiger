@@ -60,8 +60,11 @@ class HapiGER
         @_esm = new MemESM(@options.namespace, {})
         @_ger = new GER(@_esm, @options)
       when 'pg'
-        throw new Error('No esm_url') if !@options.esmoptions.url
-        knex = new knex(client: 'pg', connection: @options.esmoptions.url)
+        throw new Error('No esm_url') if !@options.esmoptions.connection
+        esm_options = _.defaults(@options.esmoptions, {
+          client: 'pg'
+        })
+        knex = new knex(esm_options)
         @_esm = new PsqlESM(@options.namespace, {knex: knex})
         @_ger = new GER(@_esm, @options)
       when 'rethinkdb'
