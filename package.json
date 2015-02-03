@@ -37,7 +37,7 @@
   "devDependencies": {
     "mocha": "1.18.2",
     "chai": "1.9.1",
-    "ger-client": "0.0.6",
+    "ger-client": "0.0.7",
     "sinon": "1.12.2"
   },
   "scripts": {

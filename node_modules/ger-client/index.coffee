@@ -64,7 +64,7 @@ class GERClient
     .then(parse_response_into_json_status)
 
   action: (action, weight) ->
-    req = { method: "PUT", body: [JSON.stringify({weight: weight})], url: "#{@ger_uri}/actions/#{action}"}
+    req = { method: "POST", body: [JSON.stringify({name: action, weight: weight})], url: "#{@ger_uri}/actions"}
     qhttp.request(req)
     .then(parse_response_into_json_status)
 
