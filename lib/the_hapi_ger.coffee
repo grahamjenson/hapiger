@@ -109,6 +109,8 @@ GERAPI =
             action: Joi.any()
             thing: Joi.any()
       handler: (request, reply) =>
+        #TODO paginate events, restrict number returned ..
+
         get_namespace_ger(request.params.namespace)
         .then( (ger) ->
           ger.find_events(request.query.person, request.query.action, request.query.thing)
@@ -125,6 +127,7 @@ GERAPI =
       method: 'GET',
       path: '/{namespace}/events/stats',
       handler: (request, reply) =>
+        #TODO add more statistics
         get_namespace_ger(request.params.namespace)
         .then( (ger) ->
           ger.count_events()
@@ -215,7 +218,7 @@ GERAPI =
             action: Joi.any().required()
 
       handler: (request, reply) =>
-        #TODO change type of recommendation based on parameters, e.g. for person action if they are included
+        #TODO if (thing,action) shows up, then return things recommendations 
         
         person = request.query.person
         action = request.query.action

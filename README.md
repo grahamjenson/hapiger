@@ -95,3 +95,7 @@ curl -X DELETE 'http://localhost:3456/namespace/movies'
 # Posts
 1. Overall description and motivation of GER: [Good Enough Recommendations with GER](http://maori.geek.nz/post/good_enough_recomendations_with_ger)
 2. How GER works [GER's Anatomy: How to Generate Good Enough Recommendations](http://www.maori.geek.nz/post/how_ger_generates_recommendations_the_anatomy_of_a_recommendations_engine)
+
+# Changelog
+
+###TODO
