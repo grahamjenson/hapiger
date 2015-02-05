@@ -1,8 +1,9 @@
 <img src="./assets/hapiger300x200.png" align="right" alt="HapiGER logo" />
 
-Providing good recommendations can create greater user engagement and directly provide value by recommending items the customer might additionally like. However, many applications don't provide recommendations to users because of the difficulty in implementing a custom engine or difficulty using an off-the-shelf engine.
+Providing good recommendations can create greater user engagement and directly provide value by recommending items the customer might additionally like. However, many applications don't provide recommendations to users because of the difficulty in implementing a custom engine or the pain of using an off-the-shelf engine.
 
-Good Enough Recommendations (**GER**) is a scalable simple recommendation engine and **HapiGER** is an HTTP service wrapping GER using the [Hapi.js](http://hapijs.org) framework.
+**HapiGER** is a recommendations service that uses the Good Enough Recommendations (**GER**), a scalable simple recommendation engine, and the [Hapi.js](http://hapijs.org) framework. It has been developed to be easy to integrate, easy to use and scalable.
+
 
 #Quick Start Guide
 
@@ -20,7 +21,7 @@ Start with Memory Event Store (events are not persisted)
 hapiger --es memory
 ```
 
-Start with PostgreSQL Event Store (options are passed to [knex](http://knexjs.org/))
+**Recommended**: Start with PostgreSQL Event Store (options are passed to [knex](http://knexjs.org/))
 
 ```
 hapiger --es pg --esoptions '{
@@ -92,7 +93,7 @@ curl -X DELETE 'http://localhost:3456/namespace/movies'
 
 ###TODO
 
-# Posts
+# Further Reading
 1. Overall description and motivation of GER: [Good Enough Recommendations with GER](http://maori.geek.nz/post/good_enough_recomendations_with_ger)
 2. How GER works [GER's Anatomy: How to Generate Good Enough Recommendations](http://www.maori.geek.nz/post/how_ger_generates_recommendations_the_anatomy_of_a_recommendations_engine)
 
