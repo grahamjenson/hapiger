@@ -1,6 +1,6 @@
 {
   "name": "hapiger",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Hapi.js HTTP wrapper for Good Enough Recommendation engine (GER)",
   "url": "https://github.com/grahamjenson/hapiger",
   "main": "index.coffee",

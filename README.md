@@ -1,28 +1,44 @@
+# HapiGER
+
 <img src="./assets/hapiger300x200.png" align="right" alt="HapiGER logo" />
 
 Providing good recommendations can create greater user engagement and directly provide value by recommending items the customer might additionally like. However, many applications don't provide recommendations to users because of the difficulty in implementing a custom engine or the pain of using an off-the-shelf engine.
 
-**HapiGER** is a recommendations service that uses the Good Enough Recommendations (**GER**), a scalable simple recommendation engine, and the [Hapi.js](http://hapijs.org) framework. It has been developed to be easy to integrate, easy to use and scalable.
+**HapiGER** is a recommendations service that uses the [Good Enough Recommendations (**GER**)](https://www.npmjs.com/package/ger), a scalable, simple recommendations engine, and the [Hapi.js](http://hapijs.org) framework. It has been developed to be easy to integrate, easy to use and very scalable.
 
 [Project Site](http://www.hapiger.com)
 
-#Quick Start Guide
+## Quick Start Guide
 
-##Install HapiGER
+<br/>
+***
+#### Install HapiGER
+
+Install with `npm`
 
 ```bash
 npm install -g hapiger
 ```
 
-## Start HapiGER
+<br/>
+***
 
-Start with Memory Event Store (events are not persisted)
+#### Start HapiGER
+
+By default it will start with an in-memory event store (events are not persisted)
 
 ```bash
 hapiger
 ```
 
-##Give an Action Weight
+*There are also PostgreSQL and RethinkDB event stores for persistence and scaling*
+
+<br/>
+***
+
+#### Give an Action Weight
+
+Set the `view` action to have weight `1`:
 
 ```bash
 curl -X POST 'http://localhost:3456/default/actions' -d'{
@@ -31,7 +47,10 @@ curl -X POST 'http://localhost:3456/default/actions' -d'{
   }'
 ```
 
-## Create some Events
+<br/>
+***
+
+#### Create some Events
 
 `Alice` `view`s `Harry Potter` 
 
@@ -43,7 +62,7 @@ curl -X POST 'http://localhost:3456/default/events' -d '{
   }' 
 ```
 
-Then, `Bob` also `views` `Harry Potter` (so `Bob` has similar viewing habits to `Alice`)
+Then, `Bob` also `view`s `Harry Potter` (now `Bob` has similar viewing habits to `Alice`)
 
 ```bash
 curl -X POST 'http://localhost:3456/default/events' -d '{
@@ -63,7 +82,10 @@ curl -X POST 'http://localhost:3456/default/events' -d '{
   }'
 ```
 
-## Get Recommendations
+<br/>
+***
+
+#### Get Recommendations
 
 What books should `Alice` `buy`?
 
@@ -71,7 +93,7 @@ What books should `Alice` `buy`?
 curl -X GET 'http://localhost:3456/default/recommendations?person=Alice&action=buy'
 ```
 
-```JSON
+```
 {
   "recommendations":[
     {
@@ -90,26 +112,32 @@ curl -X GET 'http://localhost:3456/default/recommendations?person=Alice&action=b
 }
 ```
 
-`Alice` should by `The Hobbit` with a weight of about `0.2`, it was recommended by `Bob`.
+`Alice` should buy `The Hobbit` as it was recommended by `Bob` with a weight of about `0.2`.
 
 *The `confidence` of these recommendations is pretty low because there are not many events in the system*
 
-# How HapiGER Works (The Quick Version)
+<br/>
+*** 
+
+#### How HapiGER Works (the Quick Version)
 
 The HapiGER API calculates recommendations for `Alice` to `buy` by:
 
-1. Finding similar people to `Alice` by looking at her past events
-2. Calculating the similarities from `Alice` to the list of people
-3. Finding a list of the most recent `thing`s the similar people `buy`
-4. Calculating the weights of `thing`s using the similarity of the people
+1. Finding people that are like `Alice` by looking at her past events
+2. Calculating the similarities between `Alice` and those people
+3. Look at the recent `things` that those similar people `buy`
+4. Weight those `thing`s using the similarity of the people
 
 *If you would like to read more about how HapiGER works, here is [the long version](http://www.maori.geek.nz/post/how_ger_generates_recommendations_the_anatomy_of_a_recommendations_engine).*
 
-# Other Features
+<br/>
+***
 
-## Event Stores
+#### Event Stores
 
-The in memory event store is the default, though this is not recommended for production use. The **recommended** event store is PostgreSQL, which can be used with:
+The "in-memory" memory event store is the default, this will not scale well or persist event so is not recommended for production. 
+
+The **recommended** event store is **PostgreSQL**, which can be used with:
 
 ```
 hapiger --es pg --esoptions '{
@@ -131,23 +159,27 @@ hapiger --es rethinkdb --esoptions '{
 
 *Options passed to [rethinkdbdash](https://github.com/neumino/rethinkdbdash).*
 
-## Compacting the Event Store
+<br/>
+***
 
-The event store needs to be regularly maintained by removing old outdated or superfluous events, this is compacting. This can be done either synchronously or asynchronously:
+#### Compacting the Event Store
+
+The event store needs to be regularly maintained by removing old, outdated, or superfluous events; this is called **compacting**. This can be done either synchronously or asynchronously (it can take a while):
 
 ```
 curl -X POST 'http://localhost:3456/default/compact'
 ```
 
-
 ```
 curl -X POST 'http://localhost:3456/default/compact_async'
 ```
 
+<br/>
+***
 
-## Namespaces
+#### Namespaces
 
-Namespaces are used to separate events for different applications or categories of things. The default namespace is `default`, you can create namespaces by:
+Namespaces are used to separate events for different applications or categories of things. The default namespace is `default`, but you can create namespaces by:
 
 ```
 curl -X POST 'http://localhost:3456/namespace' -d'{
@@ -155,20 +187,26 @@ curl -X POST 'http://localhost:3456/namespace' -d'{
   }'  
 ```
 
-To delete a namespace:
+To delete a namespace (**and all its events!**):
 
 ```
 curl -X DELETE 'http://localhost:3456/namespace/movies'
 ```
 
-## Configuration of HapiGER
+<br/>
+***
 
-There are many available configuration variables for HapiGER, which can be viewed with `hapiger --help`. To understand the impact of these please read the [the long version](http://www.maori.geek.nz/post/how_ger_generates_recommendations_the_anatomy_of_a_recommendations_engine) of how HapiGER works.
+#### Configuration of HapiGER
 
-# Clients
+There are many configuration variables for HapiGER to tune the generated recommendations, these can be viewed with `hapiger --help`. The impact of each of these options are described in [the long version](http://www.maori.geek.nz/post/how_ger_generates_recommendations_the_anatomy_of_a_recommendations_engine) of how HapiGER works.
+
+<br/>
+***
+
+#### Clients
 
 1. Node.js client [ger-client](https://www.npmjs.com/package/ger-client)
 
-# Changelog
+## Changelog
 
-###TODO
+8/02/15 -- Updated readme and bumped version
