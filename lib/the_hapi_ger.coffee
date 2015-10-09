@@ -1,4 +1,5 @@
 bb = require 'bluebird'
+_ = require "underscore"
 
 Joi = require 'joi'
 Boom = require 'boom'
@@ -10,26 +11,78 @@ GER = g.GER
 
 Utils = require './utils'
 
+namespace_schema = Joi.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/)
+
+namespace_request_schema = Joi.object().keys({
+  namespace: namespace_schema.required()
+})
+
+configuration_schema = Joi.object().keys({
+  actions:                       Joi.object()
+  minimum_history_required:      Joi.number().integer().min(0)
+  neighbourhood_search_size:     Joi.number().integer().min(1).max(250)
+  similarity_search_size:        Joi.number().integer().min(1).max(250)
+  neighbourhood_size:            Joi.number().integer().min(1).max(250)
+  recommendations_per_neighbour: Joi.number().integer().min(1).max(250)
+  filter_previous_actions:       Joi.array().items(Joi.string())
+  event_decay_rate:              Joi.number().min(1).max(10)
+  time_until_expiry:             Joi.number().integer().min(0).max(2678400) #seconds in a month
+  current_datetime:              Joi.date().iso()
+  post_process_with:             Joi.array()
+})
+
+recommendation_request_schema = Joi.object().keys({
+  count: Joi.number().integer().min(1).max(200)
+  person: Joi.string()
+  thing:  Joi.string()
+  namespace: namespace_schema.required()
+  configuration: configuration_schema
+}).xor('person', 'thing')
+
+event_schema = Joi.object().keys({
+  namespace: namespace_schema.required()
+  person: Joi.string().required()
+  action: Joi.string().required()
+  thing: Joi.string().required()
+  created_at: Joi.date().iso()
+  expires_at: Joi.date().iso()
+  recommendable: Joi.boolean()
+})
+
+events_request_schema = Joi.object().keys({
+  events: Joi.array().items(event_schema).required()
+})
+
+get_events_request_schema = event_schema = Joi.object().keys({
+  namespace: namespace_schema.required()
+  person: Joi.string()
+  action: Joi.string()
+  thing: Joi.string()
+})
+
 GERAPI =
   register: (plugin, options, next) ->
     ger = options.ger
-
-    get_namespace_ger = (name) ->
-      ger.set_namespace(name)
-      ger.namespace_exists()
-      .then( (exists) ->
-        throw Boom.notFound('namespace not found') if not exists
-        #TODO it might be possible for namespace specific options here with set_options
-        ger
-      )
+    default_configuration = options.default_configuration || {}
 
     ########### NAMESPACE RESOURCE ################
     plugin.route(
       method: 'GET',
-      path: '/namespace/{namespace}',
+      path: '/namespaces',
+      handler: (request, reply) =>
+        ger.list_namespaces()
+        .then( (namespaces) ->
+          reply({namespaces: namespaces})
+        )
+        .catch((err) -> Utils.handle_error(request, err, reply) )
+    )
+
+    plugin.route(
+      method: 'DELETE',
+      path: '/namespaces/{namespace}',
       handler: (request, reply) =>
         namespace = request.params.namespace
-        get_namespace_ger(namespace)
+        ger.destroy_namespace(namespace)
         .then( ->
           reply({namespace: namespace})
         )
@@ -37,63 +90,40 @@ GERAPI =
     )
 
     plugin.route(
-      method: 'DELETE',
-      path: '/namespace/{namespace}',
-      handler: (request, reply) =>
-        namespace = request.params.namespace
-        ger.set_namespace(namespace)
-        ger.destroy_namespace()
-        .then( ->
-          reply({namespace: namespace}) 
-        )
-        .catch((err) -> Utils.handle_error(request, err, reply) )
-    )
-
-    plugin.route(
       method: 'POST',
-      path: '/namespace',
+      path: '/namespaces',
       config:
         payload:
           parse: true
           override: 'application/json'
         validate:
-          payload: Joi.object().keys(
-              namespace: Joi.any().required()
-          )
+          payload: namespace_request_schema
 
       handler: (request, reply) =>
         namespace = request.payload.namespace
-        ger.set_namespace(namespace)
-        ger.initialize_namespace()
+        ger.initialize_namespace(namespace)
         .then( ->
-          reply({namespace: namespace}) 
+          reply({namespace: namespace})
         )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
 
     ########### EVENTS RESOURCE ################
+
     #POST create event
     plugin.route(
       method: 'POST',
-      path: '/{namespace}/events',
+      path: '/events',
       config:
         payload:
           parse: true
           override: 'application/json'
         validate:
-          payload: Joi.object().keys(
-              person: Joi.any().required()
-              action: Joi.any().required()
-              thing: Joi.any().required()             
-          )
-
+          payload: events_request_schema
       handler: (request, reply) =>
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.event(request.payload.person, request.payload.action, request.payload.thing)                       
-        )
+        ger.events(request.payload.events)
         .then( (event) ->
-            reply({event: event}) 
+          reply(request.payload)
         )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
@@ -101,134 +131,50 @@ GERAPI =
     #GET event information
     plugin.route(
       method: 'GET',
-      path: '/{namespace}/events',
+      path: '/events',
       config:
         validate:
-          query:
-            person: Joi.any()
-            action: Joi.any()
-            thing: Joi.any()
-      handler: (request, reply) =>
-        #TODO paginate events, restrict number returned ..
+          query: get_events_request_schema
 
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.find_events(request.query.person, request.query.action, request.query.thing)
-        )
+      handler: (request, reply) =>
+        query = {
+          person: request.params.person,
+          action: request.params.action,
+          thing: request.params.thing
+        }
+        ger.find_events(request.params.namespace, query)
         .then( (events) ->
-          throw Boom.notFound('event not found') if events.length == 0
           reply({"_data": events})
-        )
-        .catch((err) -> Utils.handle_error(request, err, reply) )
-    )
-
-    #GET event information
-    plugin.route(
-      method: 'GET',
-      path: '/{namespace}/events/stats',
-      handler: (request, reply) =>
-        #TODO add more statistics
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.count_events()
-        )
-        .then( (count) ->
-          reply({count: count}) 
-        )
-        .catch((err) -> Utils.handle_error(request, err, reply) )
-    )
-
-
-    #POST bootstrap, upload csv for
-    plugin.route(
-      method: 'POST',
-      path: '/{namespace}/events/bootstrap',
-      config:
-        payload:
-          maxBytes: 209715200
-          output:'stream'
-          parse: true
-
-      handler: (request, reply) =>
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          stream = request.payload["events"]
-          ger.bootstrap(stream)
-        )
-        .then((added_count) ->
-          reply({added_events: added_count})
-        )
-        .catch((err) -> Utils.handle_error(request, err, reply))
-    )
-
-    ########### ACTIONS RESOURCE ################
-
-    #PUT update action
-    plugin.route(
-      method: 'POST',
-      path: '/{namespace}/actions',
-      config:
-        payload:
-          parse: true
-          override: 'application/json'
-        validate:
-          payload: Joi.object().keys(
-              name: Joi.any().required()
-              weight: Joi.any().optional()            
-          )
-      handler: (request, reply) =>
-        action = request.payload.name
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.action(action, request.payload.weight)
-        )
-        .then( (action_weight) ->
-          reply({action: action_weight.action, weight: action_weight.weight}) 
-        )
-        .catch((err) -> Utils.handle_error(request, err, reply) )
-    )
-
-    #GET update action
-    plugin.route(
-      method: 'GET',
-      path: '/{namespace}/actions/{name}',
-      handler: (request, reply) =>
-        action = request.params.name
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.get_action(action)
-        )
-        .then( (act) ->
-          throw Boom.notFound('action not found') if not act
-          reply(act)
         )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
 
 
     ########### RECOMMENDATIONS RESOURCE ################
-    #GET recommendations
+    #POST recommendations
     plugin.route(
-      method: 'GET',
-      path: '/{namespace}/recommendations',
+      method: 'POST',
+      path: '/recommendations',
       config:
+        payload:
+          parse: true
+          override: 'application/json'
         validate:
-          query:
-            person: Joi.any().required()
-            action: Joi.any().required()
-
+          payload: recommendation_request_schema
       handler: (request, reply) =>
-        #TODO if (thing,action) shows up, then return things recommendations 
-        
-        person = request.query.person
-        action = request.query.action
-        explain = !!request.query.explain
+        #TODO if (thing,action) shows up, then return things recommendations
 
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.recommendations_for_person(person, action)
-        )
-        .then( (recommendations) ->
+        person = request.payload.person
+        thing = request.payload.thing
+        namespace = request.payload.namespace
+        configuration = _.defaults(request.payload.configuration, default_configuration)
+
+        if thing
+          promise = ger.recommendations_for_thing(namespace, thing, configuration)
+        else
+          promise = ger.recommendations_for_person(namespace, person, configuration)
+
+        promise.then( (recommendations) ->
           reply(recommendations)
         )
         .catch((err) -> Utils.handle_error(request, err, reply))
@@ -237,34 +183,24 @@ GERAPI =
     #MAINTENANCE ROUTES
     plugin.route(
       method: 'POST',
-      path: '/{namespace}/compact_async',
-      handler: (request, reply) =>
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.compact_database().then( ->
-            plugin.log(['log'], {message: "COMPACT COMPLETED FOR NS #{request.params.namespace}"}) 
-          )
-          reply({message: "Doing"})
-        )
-        .catch((err) -> Utils.handle_error(request, err, reply) )
-    )
+      path: '/compact',
+      config:
+        payload:
+          parse: true
+          override: 'application/json'
+        validate:
+          payload: namespace_request_schema
 
-    plugin.route(
-      method: 'POST',
-      path: '/{namespace}/compact',
       handler: (request, reply) =>
-        get_namespace_ger(request.params.namespace)
-        .then( (ger) ->
-          ger.estimate_event_count()
-          .then( (init_count) ->
-            bb.all( [init_count, ger.compact_database()] )
-          )
-          .spread((init_count) ->
-            bb.all( [ init_count, ger.estimate_event_count()] )
-          )
-          .spread((init_count, end_count) ->
-            reply({ init_count: init_count, end_count: end_count, compression: "#{(1 - (end_count/init_count)) * 100}%" }) 
-          )
+        ger.estimate_event_count()
+        .then( (init_count) ->
+          bb.all( [init_count, ger.compact(request.payload.namespace)] )
+        )
+        .spread((init_count) ->
+          bb.all( [ init_count, ger.estimate_event_count()] )
+        )
+        .spread((init_count, end_count) ->
+          reply({ init_count: init_count, end_count: end_count, compression: "#{(1 - (end_count/init_count)) * 100}%" })
         )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
@@ -274,11 +210,6 @@ GERAPI =
 
 GERAPI.register.attributes =
   name: 'the_hapi_ger'
-  version: '0.0.1'
+  version: '0.0.2'
 
-#AMD
-if (typeof define != 'undefined' && define.amd)
-  define([], -> return GERAPI)
-#Node
-else if (typeof module != 'undefined' && module.exports)
-    module.exports = GERAPI;
+module.exports = GERAPI

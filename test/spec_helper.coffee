@@ -1,7 +1,7 @@
 process.env.NODE_ENV = 'test'
 environment = require '../config/environment'
 
-chai = require 'chai'  
+chai = require 'chai'
 should = chai.should()
 
 global.sinon = require 'sinon'
@@ -33,7 +33,7 @@ global.start_server_w_client = (namespace = 'default_ns') ->
   .then( ->
     client.create_namespace()
   )
-  .then( -> 
+  .then( ->
     client
   )
 

@@ -1,6 +1,6 @@
 {
   "name": "hapiger",
-  "version": "0.0.2",
+  "version": "0.0.10",
   "description": "Hapi.js HTTP wrapper for Good Enough Recommendation engine (GER)",
   "url": "https://github.com/grahamjenson/hapiger",
   "main": "index.coffee",
@@ -22,18 +22,18 @@
   },
   "license": "MIT",
   "dependencies"  : {
-    "hapi": "8.1.0",
-    "joi": "5.1.0",
-    "boom": "2.6.1",
-    "good": "5.1.1 ",
-    "good-console": "4.1.0",
+    "hapi": "10.4.1",
+    "joi": "6.9.0",
+    "boom": "2.9.0",
+    "good": "6.4.0",
+    "good-console": "5.1.0",
     "bluebird": "2.4.2",
     "coffee-script": "1.7.1",
     "chalk": "0.5.1",
     "underscore": "1.7.0",
     "commander": "2.6.0",
     "ger": "0.0.98",
-    "ger_rethinkdb_esm": "0.0.01"
+    "ger_rethinkdb_esm": "0.0.03"
   },
   "devDependencies": {
     "mocha": "1.18.2",

@@ -1,8 +1,7 @@
-#Setup the environment variables
-environment = require '../config/environment'
 
 #PROMISES LIBRARY
 bb = require 'bluebird'
+_ = require "underscore"
 #bb.Promise.longStackTraces();
 
 # HAPI STACK
@@ -12,16 +11,19 @@ Joi = require 'joi'
 # GER
 g = require 'ger'
 knex = g.knex # postgres client
-r = g.r #rethink client
+
 
 GER = g.GER
 
 #ESMs
 PsqlESM = g.PsqlESM
 MemESM = g.MemESM
-RethinkDBESM = g.RethinkDBESM
 
-_ = require "underscore"
+ret_esm = require 'ger_rethinkdb_esm'
+RethinkDBESM = ret_esm.esm
+r = ret_esm.r
+
+
 
 Utils = {}
 
@@ -37,22 +39,16 @@ Utils.handle_error = (logger, err, reply) ->
 
 class HapiGER
   constructor: (options = {}) ->
-    console.log options
     @options = _.defaults(options, {
       esm: 'memory'
       esmoptions: {}
       port: 3456
-      namespace: 'default'
-      minimum_history_limit: 1,
-      similar_people_limit: 25,
-      related_things_limit: 10
-      recommendations_limit: 20,
-      recent_event_days: 14,
-      previous_actions_filter: []
-      compact_database_person_action_limit: 1500
-      compact_database_thing_action_limit: 1500
-      person_history_limit: 500
-      crowd_weight: 0
+      logging_options: {
+        # reporters: [{
+        #   reporter: require('good-console'),
+        #   args: [{ log: '*', response: '*' }]
+        # }]
+      }
     })
 
     switch @options.esm
@@ -77,7 +73,6 @@ class HapiGER
   initialize: () ->
     bb.try( => @init_server())
     .then( => @setup_server())
-    .then( => @add_server_methods())
     .then( => @add_server_routes())
 
   init_server: (esm = 'mem') ->
@@ -88,12 +83,10 @@ class HapiGER
     @_ger.initialize_namespace() #add the default namespace
 
   setup_server: ->
-    @load_server_plugin('good', environment.logging_options)
+    @load_server_plugin('good', @options.logging_options)
 
   add_server_routes: ->
     @load_server_plugin('./the_hapi_ger', {ger : @_ger})
-    
-  add_server_methods: ->
 
   server_method: (method, args = []) ->
     d = bb.defer()

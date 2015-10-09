@@ -18,7 +18,7 @@ Utils.server_method = (method, args = []) ->
       d.resolve(result)
   ))
   d.promise
-  
+
 #AMD
 if (typeof define != 'undefined' && define.amd)
   define([], -> return Utils)
