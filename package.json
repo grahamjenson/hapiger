@@ -27,12 +27,13 @@
     "boom": "2.6.1",
     "good": "5.1.1 ",
     "good-console": "4.1.0",
-    "ger": "0.0.69",
     "bluebird": "2.4.2",
     "coffee-script": "1.7.1",
     "chalk": "0.5.1",
     "underscore": "1.7.0",
-    "commander": "2.6.0"
+    "commander": "2.6.0",
+    "ger": "0.0.98",
+    "ger_rethinkdb_esm": "0.0.01"
   },
   "devDependencies": {
     "mocha": "1.18.2",
