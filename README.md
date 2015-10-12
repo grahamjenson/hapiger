@@ -57,7 +57,7 @@ An event occurs when a person actions something, e.g. `Alice` `view`s `Harry Pot
 curl -X POST 'http://localhost:3456/events' -d '{
     "events": [
     {
-      "namespace": "movies"
+      "namespace": "movies",
       "person":    "Alice",
       "action":    "view",
       "thing":     "Harry Potter"
@@ -72,7 +72,7 @@ Then, `Bob` also `view`s `Harry Potter` (now `Bob` has similar viewing habits to
 curl -X POST 'http://localhost:3456/events' -d '{
     "events": [
     {
-      "namespace": "movies"
+      "namespace": "movies",
       "person":    "Bob",
       "action":    "view",
       "thing":     "Harry Potter"
@@ -92,7 +92,7 @@ For example, when `Bob` `buy`s `LOTR`
 curl -X POST 'http://localhost:3456/events' -d '{
     "events": [
     {
-      "namespace":  "movies"
+      "namespace":  "movies",
       "person":     "Bob",
       "action":     "buy",
       "thing":      "LOTR",
@@ -118,26 +118,27 @@ curl -X POST 'http://localhost:3456/recommendations' -d '{
     "configuration": {
       "actions" : {"view": 5, "buy": 10}
     }
-  ]
 }'
 ```
 
 ```
 {
-  "recommendations":[
+  "recommendations": [
     {
-      "thing":"The Hobbit",
-      "weight":0.22119921692859512,
-      "people":[
+      "thing": "LOTR",
+      "weight": 0.44721359549996,
+      "last_actioned_at": "2015-10-12T17:04:14+01:00",
+      "last_expires_at": "2016-10-12T01:00:00+01:00",
+      "people": [
         "Bob"
-      ],
-      "last_actioned_at":"2015-02-05T05:56:42.862Z"
+      ]
     }
   ],
-  "confidence":0.00019020140391302825,
-  "similar_people":{
-    "Bob":1
-  }
+  "neighbourhood": {
+    "Bob": 0.44721359549996,
+    "Alice": 1
+  },
+  "confidence": 0.00036398962692384
 }
 ```
 
@@ -196,9 +197,9 @@ hapiger --es rethinkdb --esoptions '{
 The event store needs to be regularly maintained by removing old, outdated, or superfluous events; this is called **compacting**
 
 ```
-curl -X POST 'http://localhost:3456/compact' -d {
+curl -X POST 'http://localhost:3456/compact' -d '{
   "namespace": "movies"
-}
+}'
 ```
 
 
@@ -216,17 +217,14 @@ curl -X GET 'http://localhost:3456/namespaces'
 To delete a namespace (**and all its events!**):
 
 ```
-curl -X DELETE 'http://localhost:3456/namespace/movies'
+curl -X DELETE 'http://localhost:3456/namespaces/movies'
 ```
 
 
 <br/>
 ***
 
-#### Clients
-
-1. Node.js client [ger-client](https://www.npmjs.com/package/ger-client)
-
 ## Changelog
 
+12/10/15 -- Updated README, new version of GER
 8/02/15 -- Updated readme and bumped version
