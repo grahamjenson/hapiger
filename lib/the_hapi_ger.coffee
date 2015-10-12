@@ -9,7 +9,6 @@ g = require 'ger'
 
 GER = g.GER
 
-Utils = require './utils'
 
 namespace_schema = Joi.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/)
 
@@ -46,7 +45,6 @@ event_schema = Joi.object().keys({
   thing: Joi.string().required()
   created_at: Joi.date().iso()
   expires_at: Joi.date().iso()
-  recommendable: Joi.boolean()
 })
 
 events_request_schema = Joi.object().keys({
@@ -59,6 +57,20 @@ get_events_request_schema = event_schema = Joi.object().keys({
   action: Joi.string()
   thing: Joi.string()
 })
+
+
+Utils = {}
+
+Utils.handle_error = (logger, err, reply) ->
+  console.log err.stack
+  if err.isBoom
+    logger.log(['error'], err)
+    reply(err)
+  else
+    logger.log(['error'], {error: "#{err}", stack: err.stack})
+    reply({error: "An unexpected error occurred"}).code(500)
+
+
 
 GERAPI =
   register: (plugin, options, next) ->
@@ -82,7 +94,6 @@ GERAPI =
       path: '/namespaces/{namespace}',
       handler: (request, reply) =>
         namespace = request.params.namespace
-        console.log namespace
         ger.namespace_exists(namespace)
         .then( (exists) ->
           throw Boom.notFound() if !exists

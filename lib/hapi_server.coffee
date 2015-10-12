@@ -39,7 +39,7 @@ class HapiGER
 
     switch @options.esm
       when 'memory'
-        @_esm = new MemESM(@options.namespace, {})
+        @_esm = new MemESM({})
         @_ger = new GER(@_esm, @options)
       when 'pg'
         throw new Error('No esm_url') if !@options.esmoptions.connection
@@ -47,11 +47,11 @@ class HapiGER
           client: 'pg'
         })
         knex = new knex(esm_options)
-        @_esm = new PsqlESM(@options.namespace, {knex: knex})
+        @_esm = new PsqlESM({knex: knex})
         @_ger = new GER(@_esm, @options)
       when 'rethinkdb'
         rethinkcon = new r(@options.esmoptions)
-        @_esm = new RethinkDBESM(@options.namespace, {r: rethinkcon})
+        @_esm = new RethinkDBESM({r: rethinkcon}, GER.NamespaceDoestNotExist)
         @_ger = new GER(@_esm, @options)
       else
         throw new Error("no such esm")
@@ -66,7 +66,6 @@ class HapiGER
     @_server = new Hapi.Server()
     @_server.connection({ port: @options.port });
     @info = @_server.info
-    @_ger.initialize_namespace() #add the default namespace
 
   setup_server: ->
     @load_server_plugin('good', @options.logging_options)

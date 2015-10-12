@@ -33,7 +33,7 @@
     "underscore": "1.7.0",
     "commander": "2.6.0",
     "ger": "0.0.98",
-    "ger_rethinkdb_esm": "0.0.03",
+    "ger_rethinkdb_esm": "0.0.05",
     "moment": "2.9.0"
   },
   "devDependencies": {

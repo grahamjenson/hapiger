@@ -21,9 +21,9 @@ describe 'recommendations routes', ->
       )
       .then( ->
         events = []
-        events.push {namespace: ns, person: 'alice', action: 'views', thing: 'LOTR', recommendable: true, expires_at: tomorrow}
-        events.push {namespace: ns, person: 'alice', action: 'views', thing: 'XMEN', recommendable: true, expires_at: tomorrow}
-        events.push {namespace: ns, person: 'bob', action: 'views', thing: 'XMEN', recommendable: true, expires_at: tomorrow}
+        events.push {namespace: ns, person: 'alice', action: 'views', thing: 'LOTR', expires_at: tomorrow}
+        events.push {namespace: ns, person: 'alice', action: 'views', thing: 'XMEN', expires_at: tomorrow}
+        events.push {namespace: ns, person: 'bob', action: 'views', thing: 'XMEN',  expires_at: tomorrow}
         client.create_events(events)
       )
       .then( ->

@@ -1,2 +1,3 @@
---compilers coffee:coffee-script/register 
+--compilers coffee:coffee-script/register
 --require test/spec_helper
+--timeout 20000
