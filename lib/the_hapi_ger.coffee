@@ -65,7 +65,7 @@ GERAPI =
     ger = options.ger
     default_configuration = options.default_configuration || {}
 
-    ########### NAMESPACE RESOURCE ################
+    ########### NAMESPACE routes ################
     plugin.route(
       method: 'GET',
       path: '/namespaces',
@@ -82,7 +82,12 @@ GERAPI =
       path: '/namespaces/{namespace}',
       handler: (request, reply) =>
         namespace = request.params.namespace
-        ger.destroy_namespace(namespace)
+        console.log namespace
+        ger.namespace_exists(namespace)
+        .then( (exists) ->
+          throw Boom.notFound() if !exists
+          ger.destroy_namespace(namespace)
+        )
         .then( ->
           reply({namespace: namespace})
         )
@@ -108,7 +113,7 @@ GERAPI =
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
 
-    ########### EVENTS RESOURCE ################
+    ########### EVENTS routes ################
 
     #POST create event
     plugin.route(
@@ -125,6 +130,9 @@ GERAPI =
         .then( (event) ->
           reply(request.payload)
         )
+        .catch(GER.NamespaceDoestNotExist, (err) ->
+          Utils.handle_error(request, Boom.notFound("Namespace Not Found"), reply)
+        )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
 
@@ -138,19 +146,20 @@ GERAPI =
 
       handler: (request, reply) =>
         query = {
-          person: request.params.person,
-          action: request.params.action,
-          thing: request.params.thing
+          person: request.query.person,
+          action: request.query.action,
+          thing: request.query.thing
         }
-        ger.find_events(request.params.namespace, query)
+        ger.find_events(request.query.namespace, query)
         .then( (events) ->
-          reply({"_data": events})
+          reply({"events": events})
         )
         .catch((err) -> Utils.handle_error(request, err, reply) )
     )
 
 
-    ########### RECOMMENDATIONS RESOURCE ################
+    ########### RECOMMENDATIONS routes ################
+
     #POST recommendations
     plugin.route(
       method: 'POST',
@@ -162,25 +171,29 @@ GERAPI =
         validate:
           payload: recommendation_request_schema
       handler: (request, reply) =>
-        #TODO if (thing,action) shows up, then return things recommendations
 
         person = request.payload.person
         thing = request.payload.thing
         namespace = request.payload.namespace
         configuration = _.defaults(request.payload.configuration, default_configuration)
 
-        if thing
-          promise = ger.recommendations_for_thing(namespace, thing, configuration)
-        else
-          promise = ger.recommendations_for_person(namespace, person, configuration)
+        ger.namespace_exists(namespace)
+        .then( (exists) ->
+          throw Boom.notFound() if !exists
+          if thing
+            promise = ger.recommendations_for_thing(namespace, thing, configuration)
+          else
+            promise = ger.recommendations_for_person(namespace, person, configuration)
 
-        promise.then( (recommendations) ->
+          promise
+        )
+        .then( (recommendations) ->
           reply(recommendations)
         )
         .catch((err) -> Utils.handle_error(request, err, reply))
     )
 
-    #MAINTENANCE ROUTES
+    ########### Maintenance routes ################
     plugin.route(
       method: 'POST',
       path: '/compact',
@@ -192,12 +205,17 @@ GERAPI =
           payload: namespace_request_schema
 
       handler: (request, reply) =>
-        ger.estimate_event_count()
+        ns = request.payload.namespace
+        ger.namespace_exists(ns)
+        .then( (exists) ->
+          throw Boom.notFound() if !exists
+          ger.estimate_event_count(ns)
+        )
         .then( (init_count) ->
-          bb.all( [init_count, ger.compact(request.payload.namespace)] )
+          bb.all( [init_count, ger.compact_database(ns)] )
         )
         .spread((init_count) ->
-          bb.all( [ init_count, ger.estimate_event_count()] )
+          bb.all( [ init_count, ger.estimate_event_count(ns)] )
         )
         .spread((init_count, end_count) ->
           reply({ init_count: init_count, end_count: end_count, compression: "#{(1 - (end_count/init_count)) * 100}%" })

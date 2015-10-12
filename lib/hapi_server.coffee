@@ -23,20 +23,6 @@ ret_esm = require 'ger_rethinkdb_esm'
 RethinkDBESM = ret_esm.esm
 r = ret_esm.r
 
-
-
-Utils = {}
-
-Utils.handle_error = (logger, err, reply) ->
-  if err.isBoom
-    logger.log(['error'], err)
-    reply(err)
-  else
-    console.log "Unhandled Error", err, err.stack
-    logger.log(['error'], {error: "#{err}", stack: err.stack})
-    reply({error: "An unexpected error occurred"}).code(500)
-
-
 class HapiGER
   constructor: (options = {}) ->
     @options = _.defaults(options, {
@@ -44,10 +30,10 @@ class HapiGER
       esmoptions: {}
       port: 3456
       logging_options: {
-        # reporters: [{
-        #   reporter: require('good-console'),
-        #   args: [{ log: '*', response: '*' }]
-        # }]
+        reporters: [{
+          reporter: require('good-console'),
+          events: { log: '*', response: '*' }
+        }]
       }
     })
 

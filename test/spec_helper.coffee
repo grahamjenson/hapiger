@@ -1,56 +1,36 @@
 process.env.NODE_ENV = 'test'
-environment = require '../config/environment'
 
 chai = require 'chai'
 should = chai.should()
 
-global.sinon = require 'sinon'
 global.bb = require 'bluebird'
+global._ = require 'underscore'
+global.moment = require 'moment'
+
 bb.Promise.longStackTraces();
 
-global.GERClient = require 'ger-client'
+global.GERClient = require './client'
 
-fs = require('fs');
-path = require 'path'
 
 HapiGER = require('../lib/hapi_server.coffee')
 
-global.bootstrap_stream = ->
-  fs.createReadStream(path.resolve('./test/test_events.csv'))
-
 global.server = new HapiGER()
+
+global.client = null
+
 
 global.start_server = server.initialize()
 .then( -> server.start())
-.then( -> server)
+.then( ->
+  global.client = new GERClient("#{server.info.uri}")
+  server
+)
 
-global.start_server_w_client = (namespace = 'default_ns') ->
-  client = null
-  start_server.then( (server) ->
-    client = new GERClient("#{server.info.uri}", namespace)
-    client.destroy_namespace()
-  )
-  .then( ->
-    client.create_namespace()
-  )
-  .then( ->
-    client
-  )
+global.random_namespace = ->
+  "namespace_#{_.random(0, 99999999)}"
 
-global.requests = {}
 
-global.requests.all_400 = (list_of_requests) ->
-  bb.all(list_of_requests)
-  .then( (resps) ->
-    (resp[1].should.equal 400 for resp in resps)
-    [..., last] = resps
-    last
-  )
-
-global.requests.all_200 = (list_of_requests) ->
-  bb.all(list_of_requests)
-  .then( (resps) ->
-    (resp[1].should.equal 200 for resp in resps)
-    [..., last] = resps
-    last
-  )
+global.tomorrow = moment().add(1, 'days').format()
+global.today =  moment().format()
+global.yesterday = moment().subtract(1, 'days').format()
+global.tenMinutesAgo =  moment().subtract(10, 'minutes').format()
