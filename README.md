@@ -109,7 +109,7 @@ This is an action that can be used to find similar people **AND** it can be seen
 
 #### Recommendations
 
-What books should `Alice` `buy`?
+What movies should we recommend `Alice`?
 
 ```bash
 curl -X POST 'http://localhost:3456/recommendations' -d '{
