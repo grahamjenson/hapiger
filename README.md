@@ -31,7 +31,7 @@ By default it will start with an in-memory event store (events are not persisted
 hapiger
 ```
 
-*There are also PostgreSQL and RethinkDB event stores for persistence and scaling*
+*There are also PostgreSQL, RethinkDB and MySQL event stores for persistence and scaling*
 
 <br/>
 ***
@@ -96,7 +96,7 @@ curl -X POST 'http://localhost:3456/events' -d '{
       "person":     "Bob",
       "action":     "buy",
       "thing":      "LOTR",
-      "expires_at": "2016-10-12"
+      "expires_at": "2017-10-12"
     }
   ]
 }'
@@ -132,7 +132,7 @@ will return:
       "thing": "LOTR",
       "weight": 0.44721359549996,
       "last_actioned_at": "2015-10-12T17:04:14+01:00",
-      "last_expires_at": "2016-10-12T01:00:00+01:00",
+      "last_expires_at": "2017-10-12T01:00:00+01:00",
       "people": [
         "Bob"
       ]
@@ -171,7 +171,7 @@ returns
       "thing": "LOTR",
       "weight": 0.70710678118655,
       "last_actioned_at": "2015-10-13T08:53:00.885Z",
-      "last_expires_at": "2016-10-12T00:00:00.000Z",
+      "last_expires_at": "2017-10-12T00:00:00.000Z",
       "people": [
         "Bob"
       ]
@@ -217,6 +217,21 @@ hapiger --es rethinkdb --esoptions '{
 
 *Options passed to [rethinkdbdash](https://github.com/neumino/rethinkdbdash).*
 
+HapiGER also supports a [MySQL](https://www.mysql.com/) event store:
+
+```
+hapiger --es mysql --esoptions '{
+    "connection": {
+      "host": "localhost",
+      "port": 3306,
+      "user": "root",
+      "password": ""
+    }
+  }'
+```
+
+*Options are passed to [knex](http://knexjs.org/).*
+
 <br/>
 ***
 
@@ -238,7 +253,7 @@ curl -X POST 'http://localhost:3456/compact' -d '{
 Namespaces are used to separate events for different applications or categories of things. You can create namespaces by:
 
 ```
-curl -X POST 'http://localhost:3456/namespace' -d'{
+curl -X POST 'http://localhost:3456/namespaces' -d'{
     "namespace": "newnamespace"
   }'
 ```
@@ -246,7 +261,7 @@ curl -X POST 'http://localhost:3456/namespace' -d'{
 To delete a namespace (**and all its events!**):
 
 ```
-curl -X DELETE 'http://localhost:3456/namespace/movies'
+curl -X DELETE 'http://localhost:3456/namespaces/movies'
 ```
 
 <br/>
