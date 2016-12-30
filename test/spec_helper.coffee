@@ -24,7 +24,15 @@ global.server = new HapiGER()
 #     "port": 28015,
 #     "db":"hapiger"
 # }})
-
+#
+#global.server = new HapiGER({esm:'mysql', esmoptions: {
+#  connection: {
+#    host: 'localhost',
+#    port: 3306,
+#    user: 'root',
+#    password: ''
+#  }
+#}})
 
 global.client = null
 

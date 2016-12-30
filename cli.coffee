@@ -20,11 +20,12 @@ cli = ->
     .usage('[options]')
     .description('start a hapiger server')
     .option('-p, --port <port>', 'the port to start the server on', 3456)
-    .option('-e, --es <esm>', 'select Event Store [memory, pg, rethinkdb]', 'memory')
+    .option('-e, --es <esm>', 'select Event Store [memory, pg, rethinkdb, mysql]', 'memory')
     .option('-E, --esoptions <options>', 'JSON representation of Options for Event Store e.g. "{"url": "postgres://localhost/hapiger"}"
       \n\t memory -- {}
       \n\t pg -- {"url" : "postgres url"}
-      \n\t rethinkdb -- "{"host": "rethinkdb host", "port": "rethink port", "db": "rethink database"}
+      \n\t rethinkdb -- {"host": "rethinkdb host", "port": "rethink port", "db": "rethink database"}
+      \n\t mysql -- {"connection": {"host": "mysql host", "port": "mysql port", "user": "mysql user", "password": "mysql password"}}
       ', ((input) -> JSON.parse(input)), {})
     .option('-v, --verbose', "More Output", false)
     .option('-D --default_configuration', "Default Configuration to generate recommendations", {})

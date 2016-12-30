@@ -34,6 +34,7 @@
     "commander": "2.6.0",
     "ger": "0.0.98",
     "ger_rethinkdb_esm": "0.0.05",
+    "ger_mysql_esm": "0.0.2",
     "moment": "2.9.0"
   },
   "devDependencies": {
