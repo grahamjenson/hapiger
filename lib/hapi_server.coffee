@@ -23,6 +23,9 @@ ret_esm = require 'ger_rethinkdb_esm'
 RethinkDBESM = ret_esm.esm
 r = ret_esm.r
 
+mysql_esm = require 'ger_mysql_esm'
+MysqlESM = mysql_esm.esm
+
 class HapiGER
   constructor: (options = {}) ->
     @options = _.defaults(options, {
@@ -52,6 +55,15 @@ class HapiGER
       when 'rethinkdb'
         rethinkcon = new r(@options.esmoptions)
         @_esm = new RethinkDBESM({r: rethinkcon}, GER.NamespaceDoestNotExist)
+        @_ger = new GER(@_esm, @options)
+      when 'mysql'
+        esm_options = _.defaults(@options.esmoptions, {client: 'mysql'})
+        esm_options.connection = _.defaults(@options.esmoptions.connection, {
+          timezone: 'utc',
+          charset: 'utf8'
+        })
+        knex = new knex(esm_options)
+        @_esm = new MysqlESM({knex: knex}, GER.NamespaceDoestNotExist)
         @_ger = new GER(@_esm, @options)
       else
         throw new Error("no such esm")
