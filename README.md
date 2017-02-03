@@ -270,6 +270,7 @@ curl -X DELETE 'http://localhost:3456/namespaces/movies'
 #### Clients
 
 1. Node.js client [ger-client](https://www.npmjs.com/package/ger-client)
+2. HapiGER NodeJS client [hapigerjs](https://www.npmjs.com/package/hapigerjs)
 
 ## Changelog
 
