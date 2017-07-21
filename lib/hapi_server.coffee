@@ -76,7 +76,7 @@ class HapiGER
   init_server: (esm = 'mem') ->
     #SETUP SERVER
     @_server = new Hapi.Server()
-    @_server.connection({ port: @options.port });
+    @_server.connection({ port: @options.port, routes: { cors:true } });
     @info = @_server.info
 
   setup_server: ->
